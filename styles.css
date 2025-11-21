@@ -141,6 +141,34 @@ body {
   border: 1px solid #cbd5f5;
 }
 
+.field input[type='file'] {
+  cursor: pointer;
+}
+
+.field input[type='file']::file-selector-button,
+.field input[type='file']::-webkit-file-upload-button {
+  margin-right: 0.75rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #4338ca);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.45rem 1.25rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input[type='file']::file-selector-button:hover,
+.field input[type='file']::-webkit-file-upload-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(67, 56, 202, 0.35);
+}
+
+.field input[type='file']:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 button {
   background: #2563eb;
   color: #fff;
@@ -206,6 +234,9 @@ button[disabled] {
   color: #e0f2fe;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 20px 35px rgba(30, 58, 138, 0.35);
+  max-width: 840px;
+  width: 100%;
+  margin: -0.25rem auto 0.5rem;
 }
 
 .root-label {
