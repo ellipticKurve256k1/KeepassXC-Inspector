@@ -141,6 +141,26 @@ body {
   border: 1px solid #cbd5f5;
 }
 
+.input-with-toggle {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #cbd5f5;
+  border-radius: 12px;
+  padding: 0.1rem 0.15rem 0.1rem 0.4rem;
+}
+
+.input-with-toggle input {
+  border: none;
+  padding: 0.5rem 0.4rem;
+  flex: 1;
+  border-radius: 12px;
+}
+
+.input-with-toggle input:focus {
+  outline: none;
+}
+
 .field input[type='file'] {
   cursor: pointer;
 }
@@ -197,6 +217,64 @@ button[disabled] {
   border: 1px solid #cbd5f5;
   color: #1d4ed8;
   box-shadow: none;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: #eef2ff;
+  color: #312e81;
+  padding: 0;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.icon-button .icon-lock {
+  width: 18px;
+  height: 20px;
+  position: relative;
+}
+
+.icon-lock::before,
+.icon-lock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.icon-lock::before {
+  width: 14px;
+  height: 12px;
+  bottom: 0;
+  border-radius: 4px;
+  background: currentColor;
+}
+
+.icon-lock::after {
+  width: 10px;
+  height: 10px;
+  top: -6px;
+  border: 2px solid currentColor;
+  border-bottom: none;
+  border-radius: 999px 999px 0 0;
+  background: transparent;
+}
+
+.icon-button[aria-pressed='true'],
+.icon-button.is-active {
+  background: linear-gradient(135deg, #1d4ed8, #4338ca);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(67, 56, 202, 0.35);
+}
+
+.icon-button[aria-pressed='true'] .icon-lock::after,
+.icon-button.is-active .icon-lock::after {
+  transform: rotate(-10deg) translateX(2px);
 }
 
 .form-actions {

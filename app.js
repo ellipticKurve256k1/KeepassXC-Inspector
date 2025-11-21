@@ -12,6 +12,7 @@ const merkleTreeEl = document.getElementById('merkle-tree');
 const rootBanner = document.getElementById('root-banner');
 const rootPrefixEl = document.getElementById('root-prefix');
 const rootSuffixEl = document.getElementById('root-suffix');
+const passwordVisibilityButton = document.getElementById('password-visibility');
 
 const MAX_PREVIEW_ROWS = 25;
 const textEncoder = new TextEncoder();
@@ -128,6 +129,14 @@ clearButton.addEventListener('click', () => {
   form.reset();
   resetDisplay();
   setStatus('Inputs cleared. Ready for a new KeePass file.', 'info');
+});
+
+passwordVisibilityButton.addEventListener('click', () => {
+  const isHidden = passwordInput.type === 'password';
+  passwordInput.type = isHidden ? 'text' : 'password';
+  passwordVisibilityButton.setAttribute('aria-pressed', String(isHidden));
+  passwordVisibilityButton.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+  passwordVisibilityButton.classList.toggle('is-active', isHidden);
 });
 
 function readFileAsArrayBuffer(file) {

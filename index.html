@@ -43,7 +43,12 @@
           </label>
           <label class="field">
             <span>Password (optional if a key file is provided)</span>
-            <input id="password-input" type="password" autocomplete="current-password" />
+            <div class="input-with-toggle">
+              <input id="password-input" type="password" autocomplete="current-password" />
+              <button id="password-visibility" type="button" class="icon-button" aria-pressed="false" aria-label="Show password">
+                <span class="icon-lock" aria-hidden="true"></span>
+              </button>
+            </div>
           </label>
           <label class="field">
             <span>Key file (optional)</span>
