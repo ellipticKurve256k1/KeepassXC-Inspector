@@ -3,6 +3,7 @@ const kdbxInput = document.getElementById('kdbx-input');
 const passwordInput = document.getElementById('password-input');
 const keyFileInput = document.getElementById('keyfile-input');
 const unlockButton = document.getElementById('unlock-button');
+const clearButton = document.getElementById('clear-button');
 const statusEl = document.getElementById('status');
 const metaEl = document.getElementById('meta');
 const entriesBody = document.getElementById('entries-body');
@@ -121,6 +122,12 @@ form.addEventListener('submit', async (event) => {
   } finally {
     unlockButton.disabled = false;
   }
+});
+
+clearButton.addEventListener('click', () => {
+  form.reset();
+  resetDisplay();
+  setStatus('Inputs cleared. Ready for a new KeePass file.', 'info');
 });
 
 function readFileAsArrayBuffer(file) {

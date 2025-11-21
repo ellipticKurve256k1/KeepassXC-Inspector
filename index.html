@@ -9,18 +9,39 @@
   <body>
     <main class="page">
       <header class="hero">
-        <h1>KeePass Decryptor</h1>
-        <p>
-          Load a KeePass <code>.kdbx</code> database with a password, key file, or both. The app configures
-          <code>kdbxweb</code> and an Argon2 hashing backend entirely in the browser.
-        </p>
+        <div class="hero-heading">
+          <p class="hero-kicker">KeePass Inspector</p>
+          <h1>Unlock and verify entirely in your browser</h1>
+          <p>
+            Decrypt a KeePass <code>.kdbx</code> file, explore entry hashes, and review the Merkle tree without a single byte leaving
+            your device.
+          </p>
+        </div>
+        <div class="hero-metrics">
+          <div>
+            <span class="metric-label">100% local</span>
+            <p class="metric-copy">Passwords, key files, and hashes are held in-memory only.</p>
+          </div>
+          <div>
+            <span class="metric-label">Deterministic proofs</span>
+            <p class="metric-copy">Stable Merkle roots for side-by-side database checks.</p>
+          </div>
+        </div>
         <div id="root-banner" class="root-banner" hidden>
-          <span class="root-label">Merkle root:</span>
-          <span class="root-value"><span id="root-prefix" class="root-prefix"></span><span id="root-suffix"></span></span>
+          <span class="root-label">Current Merkle root</span>
+          <div class="root-value">
+            <span id="root-prefix" class="root-prefix"></span><span id="root-suffix"></span>
+          </div>
         </div>
       </header>
       <section class="panel">
-        <h2>Unlock Database</h2>
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">Step 1</p>
+            <h2>Unlock Database</h2>
+          </div>
+          <p class="panel-subhead">Provide a KeePass file plus credentials and generate hashes instantly.</p>
+        </div>
         <form id="unlock-form" class="form">
           <label class="field">
             <span>KDBX file</span>
@@ -34,7 +55,10 @@
             <span>Key file (optional)</span>
             <input id="keyfile-input" type="file" accept=".key,.bin,.xml,.txt" />
           </label>
-          <button id="unlock-button" type="submit">Open database</button>
+          <div class="form-actions">
+            <button id="unlock-button" type="submit">Open database</button>
+            <button id="clear-button" type="button" class="ghost">Clear</button>
+          </div>
         </form>
         <p class="hint">
           The password stays in-memory only. Key files are read via the File API and never leave the browser.
@@ -42,7 +66,13 @@
         <div id="status" class="status" role="status" aria-live="polite"></div>
       </section>
       <section class="panel">
-        <h2>Database Preview</h2>
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">Step 2</p>
+            <h2>Database Preview</h2>
+          </div>
+          <p class="panel-subhead">Review metadata, verify hashed entries, and inspect the full Merkle structure.</p>
+        </div>
         <dl class="meta" id="meta"></dl>
         <div class="entries">
           <table>
