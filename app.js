@@ -1,5 +1,3 @@
-const { Kdbx, Credentials, ProtectedValue, CryptoEngine } = window.kdbxweb || {};
-
 const form = document.getElementById('unlock-form');
 const kdbxInput = document.getElementById('kdbx-input');
 const passwordInput = document.getElementById('password-input');
@@ -12,6 +10,22 @@ const entriesFootnote = document.getElementById('entries-footnote');
 
 const MAX_PREVIEW_ROWS = 25;
 
+let cachedKdbxweb = null;
+
+function getKdbxweb() {
+  if (cachedKdbxweb) {
+    return cachedKdbxweb;
+  }
+  const lib = window.kdbxweb;
+  if (!lib) {
+    throw new Error(
+      'kdbxweb is not available. Serve index.html via a dev server so the library can be loaded.'
+    );
+  }
+  cachedKdbxweb = lib;
+  return cachedKdbxweb;
+}
+
 const ensureArgon2 = (() => {
   let configured = false;
   return function ensure() {
@@ -21,6 +35,7 @@ const ensureArgon2 = (() => {
     if (!window.argon2) {
       throw new Error('Argon2 backend is not loaded.');
     }
+    const { CryptoEngine } = getKdbxweb();
     CryptoEngine.setArgon2Impl(
       (password, salt, memory, iterations, length, parallelism, type, version) => {
         const passBytes = new Uint8Array(password);
@@ -42,7 +57,10 @@ const ensureArgon2 = (() => {
             type: argonType,
             version,
           })
-          .then((result) => result.hash.buffer);
+          .then((result) => {
+            const hash = result.hash;
+            return hash.buffer.slice(hash.byteOffset, hash.byteOffset + hash.byteLength);
+          });
       }
     );
     configured = true;
@@ -67,6 +85,8 @@ form.addEventListener('submit', async (event) => {
     if (!password && !keyFile) {
       throw new Error('Provide a password, a key file, or both.');
     }
+
+    const { Kdbx, Credentials, ProtectedValue } = getKdbxweb();
 
     const [dbBytes, keyBytes] = await Promise.all([
       readFileAsArrayBuffer(dbFile),
@@ -165,6 +185,7 @@ function renderEntries(entries) {
 }
 
 function readField(entry, name) {
+  const { ProtectedValue } = getKdbxweb();
   const value = entry.fields.get(name);
   if (!value) {
     return '—';
