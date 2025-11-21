@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KeePass KDBX Inspector</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <h1>KeePass Decryptor</h1>
+        <p>
+          Load a KeePass <code>.kdbx</code> database with a password, key file, or both. The app configures
+          <code>kdbxweb</code> and an Argon2 hashing backend entirely in the browser.
+        </p>
+      </header>
+      <section class="panel">
+        <h2>Unlock Database</h2>
+        <form id="unlock-form" class="form">
+          <label class="field">
+            <span>KDBX file</span>
+            <input id="kdbx-input" type="file" accept=".kdbx" required />
+          </label>
+          <label class="field">
+            <span>Password (optional if a key file is provided)</span>
+            <input id="password-input" type="password" autocomplete="current-password" />
+          </label>
+          <label class="field">
+            <span>Key file (optional)</span>
+            <input id="keyfile-input" type="file" accept=".key,.bin,.xml,.txt" />
+          </label>
+          <button id="unlock-button" type="submit">Open database</button>
+        </form>
+        <p class="hint">
+          The password stays in-memory only. Key files are read via the File API and never leave the browser.
+        </p>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </section>
+      <section class="panel">
+        <h2>Database Preview</h2>
+        <dl class="meta" id="meta"></dl>
+        <div class="entries">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Username</th>
+                <th scope="col">URL</th>
+                <th scope="col">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="entries-body"></tbody>
+          </table>
+          <p id="entries-footnote" class="footnote"></p>
+        </div>
+      </section>
+    </main>
+    <script src="./node_modules/argon2-browser/dist/argon2-bundled.min.js"></script>
+    <script src="./node_modules/kdbxweb/dist/kdbxweb.js"></script>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
