@@ -14,6 +14,10 @@
           Load a KeePass <code>.kdbx</code> database with a password, key file, or both. The app configures
           <code>kdbxweb</code> and an Argon2 hashing backend entirely in the browser.
         </p>
+        <div id="root-banner" class="root-banner" hidden>
+          <span class="root-label">Merkle root:</span>
+          <span class="root-value"><span id="root-prefix" class="root-prefix"></span><span id="root-suffix"></span></span>
+        </div>
       </header>
       <section class="panel">
         <h2>Unlock Database</h2>
@@ -45,15 +49,14 @@
             <thead>
               <tr>
                 <th scope="col">Title</th>
-                <th scope="col">Username</th>
-                <th scope="col">URL</th>
-                <th scope="col">Notes</th>
+                <th scope="col">Merkle Hash</th>
               </tr>
             </thead>
             <tbody id="entries-body"></tbody>
           </table>
           <p id="entries-footnote" class="footnote"></p>
         </div>
+        <div id="merkle-tree" class="merkle-tree"></div>
       </section>
     </main>
     <script src="./node_modules/argon2-browser/dist/argon2-bundled.min.js"></script>
