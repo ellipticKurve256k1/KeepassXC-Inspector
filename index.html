@@ -37,9 +37,10 @@
           <p class="panel-subhead">Provide a KeePass file plus credentials and generate hashes instantly.</p>
         </div>
         <form id="unlock-form" class="form">
-          <label class="field">
-            <span>KDBX file</span>
-            <input id="kdbx-input" type="file" accept=".kdbx" required />
+          <input id="kdbx-input" type="file" accept=".kdbx" required hidden />
+          <label class="dropzone" id="dropzone" for="kdbx-input">
+            <p>Drop a KeePass <code>.kdbx</code> file here or click to choose</p>
+            <span id="selected-file" class="selected-file" hidden>No file selected</span>
           </label>
           <label class="field">
             <span>Password (optional if a key file is provided)</span>

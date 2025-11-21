@@ -139,6 +139,8 @@ passwordVisibilityButton.addEventListener('click', () => {
   passwordVisibilityButton.classList.toggle('is-active', isHidden);
 });
 
+setupDropzone();
+
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -307,6 +309,76 @@ async function processEntries(entries) {
   }));
   const { root, levels } = await buildMerkleTree(leaves);
   return { root, leaves, levels };
+}
+
+function setupDropzone() {
+  const dropzone = document.getElementById('dropzone');
+  if (!dropzone) {
+    return;
+  }
+  const fileInput = document.getElementById('kdbx-input');
+  const selectedFileEl = document.getElementById('selected-file');
+  const activate = (event) => {
+    event.preventDefault();
+    dropzone.classList.add('dragover');
+  };
+  const deactivate = (event) => {
+    if (event) {
+      event.preventDefault();
+    }
+    dropzone.classList.remove('dragover');
+  };
+  ['dragenter', 'dragover'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, activate);
+  });
+  ['dragleave', 'dragend'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, (event) => {
+      if (
+        event.type === 'dragleave' &&
+        event.relatedTarget &&
+        dropzone.contains(event.relatedTarget)
+      ) {
+        return;
+      }
+      deactivate(event);
+    });
+  });
+  dropzone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    deactivate();
+    const files = event.dataTransfer?.files;
+    if (!files || !files.length) {
+      return;
+    }
+    let assigned = false;
+    if (typeof DataTransfer !== 'undefined') {
+      try {
+        const transfer = new DataTransfer();
+        Array.from(files).forEach((file) => transfer.items.add(file));
+        fileInput.files = transfer.files;
+        assigned = true;
+      } catch (error) {
+        console.warn('DataTransfer assignment failed, falling back to direct files list', error);
+      }
+    }
+    if (!assigned) {
+      fileInput.files = files;
+    }
+    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  fileInput.addEventListener('change', () => {
+    if (!selectedFileEl) {
+      return;
+    }
+    const file = fileInput.files && fileInput.files[0];
+    if (file) {
+      selectedFileEl.hidden = false;
+      selectedFileEl.textContent = `Selected: ${file.name}`;
+    } else {
+      selectedFileEl.hidden = true;
+      selectedFileEl.textContent = 'No file selected';
+    }
+  });
 }
 
 function normalizeEntry(entry) {

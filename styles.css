@@ -127,6 +127,34 @@ body {
   margin-bottom: 1rem;
 }
 
+.dropzone {
+  border: 2px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.dropzone.dragover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.dropzone p {
+  margin: 0;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.selected-file {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
 .field {
   display: flex;
   flex-direction: column;
