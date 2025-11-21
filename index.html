@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>KeePass KDBX Inspector</title>
+    <title>KeePassXC Inspector</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="page">
       <header class="hero">
         <div class="hero-heading">
-          <p class="hero-kicker">KeePass Inspector</p>
+          <p class="hero-kicker">KeePassXC Inspector</p>
           <h1>Unlock and verify entirely in your browser</h1>
           <p>
             Decrypt a KeePass <code>.kdbx</code> file, explore entry hashes, and review the Merkle tree without a single byte leaving
@@ -91,6 +91,14 @@
             <tbody id="entries-body"></tbody>
           </table>
           <p id="entries-footnote" class="footnote"></p>
+        </div>
+        <div id="recent-entries-section" class="recent-section" hidden>
+          <div class="recent-heading">
+            <h3>Most Recently Modified</h3>
+            <p>Top five entries sorted by their last modified timestamp.</p>
+          </div>
+          <ol id="recent-entries-list" class="recent-list"></ol>
+          <p id="recent-entries-footnote" class="footnote"></p>
         </div>
         <div id="merkle-tree" class="merkle-tree"></div>
       </section>

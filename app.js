@@ -8,6 +8,9 @@ const statusEl = document.getElementById('status');
 const metaEl = document.getElementById('meta');
 const entriesBody = document.getElementById('entries-body');
 const entriesFootnote = document.getElementById('entries-footnote');
+const recentEntriesSection = document.getElementById('recent-entries-section');
+const recentEntriesList = document.getElementById('recent-entries-list');
+const recentEntriesFootnote = document.getElementById('recent-entries-footnote');
 const merkleTreeEl = document.getElementById('merkle-tree');
 const rootBanner = document.getElementById('root-banner');
 const rootPrefixEl = document.getElementById('root-prefix');
@@ -15,6 +18,7 @@ const rootSuffixEl = document.getElementById('root-suffix');
 const passwordVisibilityButton = document.getElementById('password-visibility');
 
 const MAX_PREVIEW_ROWS = 25;
+const MAX_RECENT_ENTRIES = 5;
 const textEncoder = new TextEncoder();
 
 const STANDARD_FIELD_CANONICALS = new Set(['title', 'username', 'password', 'url', 'notes']);
@@ -112,10 +116,11 @@ form.addEventListener('submit', async (event) => {
     const defaultGroup = db.getDefaultGroup();
     const entries = defaultGroup ? Array.from(defaultGroup.allEntries()) : [];
     renderMeta(db, entries.length);
-    const merkleSnapshot = await processEntries(entries);
-    renderRootHash(merkleSnapshot.root);
-    renderEntryHashes(merkleSnapshot.leaves);
-    renderMerkleTree(merkleSnapshot.levels);
+    const { root, leaves, levels, recentEntries } = await processEntries(entries);
+    renderRootHash(root);
+    renderEntryHashes(leaves);
+    renderRecentEntries(recentEntries);
+    renderMerkleTree(levels);
     setStatus('Database unlocked successfully.', 'ok');
   } catch (error) {
     console.error(error);
@@ -154,6 +159,15 @@ function resetDisplay() {
   metaEl.innerHTML = '';
   entriesBody.innerHTML = '';
   entriesFootnote.textContent = '';
+  if (recentEntriesList) {
+    recentEntriesList.innerHTML = '';
+  }
+  if (recentEntriesFootnote) {
+    recentEntriesFootnote.textContent = '';
+  }
+  if (recentEntriesSection) {
+    recentEntriesSection.hidden = true;
+  }
   merkleTreeEl.innerHTML = '';
   rootBanner.hidden = true;
   rootPrefixEl.textContent = '';
@@ -230,6 +244,34 @@ function renderEntryHashes(leaves) {
   }
 }
 
+function renderRecentEntries(entries) {
+  if (!recentEntriesSection || !recentEntriesList || !recentEntriesFootnote) {
+    return;
+  }
+  recentEntriesList.innerHTML = '';
+  recentEntriesFootnote.textContent = '';
+  if (!entries.length) {
+    recentEntriesSection.hidden = true;
+    return;
+  }
+  recentEntriesSection.hidden = false;
+  entries.forEach((entry) => {
+    const item = document.createElement('li');
+    item.className = 'recent-item';
+    const title = document.createElement('span');
+    title.className = 'recent-title';
+    title.textContent = entry.title || 'Untitled entry';
+    const date = document.createElement('time');
+    date.className = 'recent-date';
+    date.dateTime = entry.lastModified || '';
+    date.textContent = formatDateForDisplay(entry.lastModified);
+    item.appendChild(title);
+    item.appendChild(date);
+    recentEntriesList.appendChild(item);
+  });
+  recentEntriesFootnote.textContent = `Showing up to ${MAX_RECENT_ENTRIES} entries with the most recent last modified timestamps.`;
+}
+
 function renderMerkleTree(levels) {
   merkleTreeEl.innerHTML = '';
   if (!levels.length) {
@@ -276,6 +318,24 @@ function renderMerkleTree(levels) {
   });
 }
 
+function formatDateForDisplay(isoString) {
+  if (!isoString) {
+    return 'Unknown';
+  }
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    return isoString;
+  }
+  return date.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
 function makeCell(text) {
   const cell = document.createElement('td');
   cell.textContent = text || '—';
@@ -284,7 +344,7 @@ function makeCell(text) {
 
 async function processEntries(entries) {
   if (!entries.length) {
-    return { root: '', leaves: [], levels: [] };
+    return { root: '', leaves: [], levels: [], recentEntries: [] };
   }
   const leafRecords = [];
   for (const entry of entries) {
@@ -300,15 +360,25 @@ async function processEntries(entries) {
       title: normalized.title || normalized.uuid || 'Untitled entry',
       canonicalHash,
       merkleHash,
+      lastModified: normalized.lastModified,
     });
   }
+  const recentEntries = leafRecords
+    .filter((record) => record.lastModified)
+    .slice()
+    .sort((a, b) => b.lastModified.localeCompare(a.lastModified))
+    .slice(0, MAX_RECENT_ENTRIES)
+    .map((record) => ({
+      title: record.title,
+      lastModified: record.lastModified,
+    }));
   leafRecords.sort((a, b) => a.canonicalHash.localeCompare(b.canonicalHash));
   const leaves = leafRecords.map((record) => ({
     hash: record.merkleHash,
     title: record.title,
   }));
   const { root, levels } = await buildMerkleTree(leaves);
-  return { root, leaves, levels };
+  return { root, leaves, levels, recentEntries };
 }
 
 function setupDropzone() {
