@@ -11,6 +11,8 @@ const entriesFootnote = document.getElementById('entries-footnote');
 const recentEntriesSection = document.getElementById('recent-entries-section');
 const recentEntriesList = document.getElementById('recent-entries-list');
 const recentEntriesFootnote = document.getElementById('recent-entries-footnote');
+const loadingOverlay = document.getElementById('loading-overlay');
+const loadingMessage = document.getElementById('loading-message');
 const merkleTreeEl = document.getElementById('merkle-tree');
 const rootBanner = document.getElementById('root-banner');
 const rootPrefixEl = document.getElementById('root-prefix');
@@ -87,6 +89,7 @@ form.addEventListener('submit', async (event) => {
   resetDisplay();
   setStatus('Unlocking database…', 'info');
   unlockButton.disabled = true;
+  showLoading('Unlocking database…');
   try {
     ensureArgon2();
     const dbFile = kdbxInput.files[0];
@@ -127,6 +130,7 @@ form.addEventListener('submit', async (event) => {
     setStatus(error.message || 'Failed to unlock database.', 'error');
   } finally {
     unlockButton.disabled = false;
+    hideLoading();
   }
 });
 
@@ -183,6 +187,23 @@ function setStatus(message, kind) {
   } else if (kind === 'ok') {
     statusEl.classList.add('ok');
   }
+}
+
+function showLoading(message) {
+  if (!loadingOverlay || !loadingMessage) {
+    return;
+  }
+  loadingMessage.textContent = message || 'Processing…';
+  loadingOverlay.hidden = false;
+  loadingOverlay.setAttribute('aria-busy', 'true');
+}
+
+function hideLoading() {
+  if (!loadingOverlay) {
+    return;
+  }
+  loadingOverlay.hidden = true;
+  loadingOverlay.removeAttribute('aria-busy');
 }
 
 function renderMeta(db, entryCount) {

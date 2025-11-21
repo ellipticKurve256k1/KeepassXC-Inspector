@@ -103,6 +103,12 @@
         <div id="merkle-tree" class="merkle-tree"></div>
       </section>
     </main>
+    <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden>
+      <div class="loading-content">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p id="loading-message">Unlocking database…</p>
+      </div>
+    </div>
     <script src="./node_modules/argon2-browser/dist/argon2-bundled.min.js"></script>
     <script src="./node_modules/kdbxweb/dist/kdbxweb.js"></script>
     <script src="./app.js" type="module"></script>
