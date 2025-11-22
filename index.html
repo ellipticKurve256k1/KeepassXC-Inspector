@@ -98,17 +98,17 @@
           <p class="panel-subhead">Review metadata, verify hashed entries, and inspect the full Merkle structure.</p>
         </div>
         <dl class="meta" id="meta"></dl>
-        <div class="entries">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Title</th>
-                <th scope="col">Merkle Hash</th>
-              </tr>
-            </thead>
-            <tbody id="entries-body"></tbody>
-          </table>
-          <p id="entries-footnote" class="footnote"></p>
+        <div id="data-status" class="data-status" hidden>
+          <article class="status-card" id="passkey-card">
+            <p class="card-kicker">Passkey coverage</p>
+            <p class="card-value" id="passkey-status">—</p>
+            <p class="card-footnote" id="passkey-details"></p>
+          </article>
+          <article class="status-card" id="attachment-card">
+            <p class="card-kicker">Attachment pool</p>
+            <p class="card-value" id="attachment-status">—</p>
+            <p class="card-footnote" id="attachment-details"></p>
+          </article>
         </div>
         <div id="recent-entries-section" class="recent-section" hidden>
           <div class="recent-heading">
@@ -118,7 +118,16 @@
           <ol id="recent-entries-list" class="recent-list"></ol>
           <p id="recent-entries-footnote" class="footnote"></p>
         </div>
-        <div id="merkle-tree" class="merkle-tree"></div>
+        <div id="tree-section" class="tree-section" hidden>
+          <div class="tree-header">
+            <div>
+              <h3>Merkle Tree</h3>
+              <p>Expand to audit every level of the deterministic proof.</p>
+            </div>
+            <button id="tree-toggle" type="button" class="ghost" disabled>Expand Merkle tree</button>
+          </div>
+          <div id="merkle-tree" class="merkle-tree collapsed"></div>
+        </div>
       </section>
     </main>
     <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden>

@@ -6,11 +6,16 @@ const unlockButton = document.getElementById('unlock-button');
 const clearButton = document.getElementById('clear-button');
 const statusEl = document.getElementById('status');
 const metaEl = document.getElementById('meta');
-const entriesBody = document.getElementById('entries-body');
-const entriesFootnote = document.getElementById('entries-footnote');
 const recentEntriesSection = document.getElementById('recent-entries-section');
 const recentEntriesList = document.getElementById('recent-entries-list');
 const recentEntriesFootnote = document.getElementById('recent-entries-footnote');
+const dataStatusSection = document.getElementById('data-status');
+const passkeyStatusEl = document.getElementById('passkey-status');
+const passkeyDetailsEl = document.getElementById('passkey-details');
+const attachmentStatusEl = document.getElementById('attachment-status');
+const attachmentDetailsEl = document.getElementById('attachment-details');
+const treeSection = document.getElementById('tree-section');
+const treeToggleButton = document.getElementById('tree-toggle');
 const loadingOverlay = document.getElementById('loading-overlay');
 const loadingMessage = document.getElementById('loading-message');
 const merkleTreeEl = document.getElementById('merkle-tree');
@@ -122,10 +127,11 @@ form.addEventListener('submit', async (event) => {
     const defaultGroup = db.getDefaultGroup();
     const entries = defaultGroup ? Array.from(defaultGroup.allEntries()) : [];
     renderMeta(db, entries.length);
-    const { root, leaves, levels, recentEntries } = await processEntries(entries);
+    const { root, leaves, levels, recentEntries, stats } = await processEntries(entries);
     renderRootHash(root);
     renderEntryHashes(leaves);
     renderRecentEntries(recentEntries);
+    renderDataStatus(stats);
     renderMerkleTree(levels);
     setStatus('Database unlocked successfully.', 'ok');
   } catch (error) {
@@ -154,6 +160,14 @@ passwordVisibilityButton.addEventListener('click', () => {
 setupDropzone();
 initThemeToggle();
 
+if (treeToggleButton) {
+  treeToggleButton.addEventListener('click', () => {
+    const expanded = merkleTreeEl.classList.toggle('expanded');
+    merkleTreeEl.classList.toggle('collapsed', !expanded);
+    treeToggleButton.textContent = expanded ? 'Collapse Merkle tree' : 'Expand Merkle tree';
+  });
+}
+
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -165,8 +179,6 @@ function readFileAsArrayBuffer(file) {
 
 function resetDisplay() {
   metaEl.innerHTML = '';
-  entriesBody.innerHTML = '';
-  entriesFootnote.textContent = '';
   if (recentEntriesList) {
     recentEntriesList.innerHTML = '';
   }
@@ -176,7 +188,19 @@ function resetDisplay() {
   if (recentEntriesSection) {
     recentEntriesSection.hidden = true;
   }
+  if (dataStatusSection) {
+    dataStatusSection.hidden = true;
+  }
   merkleTreeEl.innerHTML = '';
+  merkleTreeEl.classList.add('collapsed');
+  merkleTreeEl.classList.remove('expanded');
+  if (treeSection) {
+    treeSection.hidden = true;
+  }
+  if (treeToggleButton) {
+    treeToggleButton.disabled = true;
+    treeToggleButton.textContent = 'Expand Merkle tree';
+  }
   rootBanner.hidden = true;
   rootPrefixEl.textContent = '';
   rootSuffixEl.textContent = '';
@@ -281,27 +305,7 @@ function renderRootHash(root) {
   rootSuffixEl.textContent = root.slice(7);
 }
 
-function renderEntryHashes(leaves) {
-  entriesBody.innerHTML = '';
-  if (!leaves.length) {
-    entriesFootnote.textContent = 'No entries could be hashed yet.';
-    return;
-  }
-  const subset = leaves.slice(0, MAX_PREVIEW_ROWS);
-  for (const leaf of subset) {
-    const row = document.createElement('tr');
-    row.appendChild(makeCell(leaf.title || 'Untitled entry'));
-    row.appendChild(makeCell(leaf.hash));
-    entriesBody.appendChild(row);
-  }
-  if (leaves.length > MAX_PREVIEW_ROWS) {
-    entriesFootnote.textContent = `Showing the first ${MAX_PREVIEW_ROWS} hashed entries out of ${leaves.length}.`;
-  } else {
-    entriesFootnote.textContent = `Displayed ${leaves.length} hashed entr${
-      leaves.length === 1 ? 'y' : 'ies'
-    }.`;
-  }
-}
+function renderEntryHashes() {}
 
 function renderRecentEntries(entries) {
   if (!recentEntriesSection || !recentEntriesList || !recentEntriesFootnote) {
@@ -331,13 +335,54 @@ function renderRecentEntries(entries) {
   recentEntriesFootnote.textContent = `Showing up to ${MAX_RECENT_ENTRIES} entries with the most recent last modified timestamps.`;
 }
 
+function renderDataStatus(stats) {
+  if (!dataStatusSection || !passkeyStatusEl || !attachmentStatusEl) {
+    return;
+  }
+  if (!stats || !stats.totalEntries) {
+    dataStatusSection.hidden = true;
+    return;
+  }
+  dataStatusSection.hidden = false;
+  const passkeyPercent = Math.round((stats.passkeyEntries / stats.totalEntries) * 100);
+  passkeyStatusEl.textContent = `${passkeyPercent}%`;
+  if (passkeyDetailsEl) {
+    passkeyDetailsEl.textContent = stats.passkeyEntries
+      ? `${stats.passkeyEntries} of ${stats.totalEntries} entries include passkey or WebAuthn metadata.`
+      : 'No entries include passkey or WebAuthn metadata.';
+  }
+  if (attachmentStatusEl) {
+    attachmentStatusEl.textContent = stats.attachmentCount
+      ? `${stats.attachmentCount} files`
+      : 'No attachments';
+  }
+  if (attachmentDetailsEl) {
+    attachmentDetailsEl.textContent = stats.attachmentCount
+      ? `${stats.uniqueAttachments} distinct attachment labels detected.`
+      : 'Attachments are not referenced in this dataset.';
+  }
+}
+
 function renderMerkleTree(levels) {
   merkleTreeEl.innerHTML = '';
   if (!levels.length) {
-    const empty = document.createElement('p');
-    empty.textContent = 'No Merkle tree available.';
-    merkleTreeEl.appendChild(empty);
+    if (treeSection) {
+      treeSection.hidden = true;
+    }
+    if (treeToggleButton) {
+      treeToggleButton.disabled = true;
+      treeToggleButton.textContent = 'Expand Merkle tree';
+    }
     return;
+  }
+  if (treeSection) {
+    treeSection.hidden = false;
+  }
+  merkleTreeEl.classList.add('collapsed');
+  merkleTreeEl.classList.remove('expanded');
+  if (treeToggleButton) {
+    treeToggleButton.disabled = false;
+    treeToggleButton.textContent = 'Expand Merkle tree';
   }
   levels.forEach((level, index) => {
     const container = document.createElement('div');
@@ -403,11 +448,29 @@ function makeCell(text) {
 
 async function processEntries(entries) {
   if (!entries.length) {
-    return { root: '', leaves: [], levels: [], recentEntries: [] };
+    return {
+      root: '',
+      leaves: [],
+      levels: [],
+      recentEntries: [],
+      stats: { totalEntries: 0, passkeyEntries: 0, attachmentCount: 0, uniqueAttachments: 0 },
+    };
   }
   const leafRecords = [];
+  let passkeyEntries = 0;
+  let attachmentCount = 0;
+  const attachmentNames = new Set();
   for (const entry of entries) {
-    const normalized = await normalizeEntry(entry);
+    const { normalized, attachments, hasPasskey } = await normalizeEntry(entry);
+    if (hasPasskey) {
+      passkeyEntries += 1;
+    }
+    if (attachments.length) {
+      attachmentCount += attachments.length;
+      attachments.forEach((attachment) => {
+        attachmentNames.add(attachment.name || '');
+      });
+    }
     const canonical = canonicalizeNormalized(normalized);
     const canonicalJson = JSON.stringify(canonical.sortedObject);
     const hashInput = canonical.orderedValues.join('|');
@@ -437,7 +500,18 @@ async function processEntries(entries) {
     title: record.title,
   }));
   const { root, levels } = await buildMerkleTree(leaves);
-  return { root, leaves, levels, recentEntries };
+  return {
+    root,
+    leaves,
+    levels,
+    recentEntries,
+    stats: {
+      totalEntries: entries.length,
+      passkeyEntries,
+      attachmentCount,
+      uniqueAttachments: attachmentNames.size,
+    },
+  };
 }
 
 function setupDropzone() {
@@ -571,10 +645,13 @@ async function normalizeEntry(entry) {
     const key = attachment.name || `attachment-${index + 1}`;
     normalized[`attachment:${key}`] = attachment.hash;
   });
-  normalized.attachments = attachments.map((attachment) => `${attachment.name}:${attachment.hash}`).join('|');
+  normalized.attachments = normalizeText(
+    attachments.map((attachment) => `${attachment.name}:${attachment.hash}`).join('|')
+  );
   normalized.totp = normalizeText(totpParts.join('|'));
   normalized.passkey = normalizeText(passkeyParts.join('|'));
-  return normalized;
+  const hasPasskey = Boolean(normalized.passkey);
+  return { normalized, attachments, hasPasskey };
 }
 
 function canonicalizeNormalized(record) {
