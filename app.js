@@ -222,6 +222,8 @@ function setTheme(theme) {
       currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
     themeToggleButton.setAttribute('aria-pressed', String(currentTheme === 'dark'));
     themeToggleButton.setAttribute('aria-label', ariaLabel);
+    themeToggleButton.classList.toggle('is-light', currentTheme === 'light');
+    themeToggleButton.classList.toggle('is-dark', currentTheme === 'dark');
   }
 }
 
