@@ -18,16 +18,19 @@ const rootBanner = document.getElementById('root-banner');
 const rootPrefixEl = document.getElementById('root-prefix');
 const rootSuffixEl = document.getElementById('root-suffix');
 const passwordVisibilityButton = document.getElementById('password-visibility');
+const themeToggleButton = document.getElementById('theme-toggle');
 
 const MAX_PREVIEW_ROWS = 25;
 const MAX_RECENT_ENTRIES = 5;
 const textEncoder = new TextEncoder();
+const THEME_STORAGE_KEY = 'keepass-inspector-theme';
 
 const STANDARD_FIELD_CANONICALS = new Set(['title', 'username', 'password', 'url', 'notes']);
 const TOTP_HINTS = ['otp', 'totp', 'auth'];
 const PASSKEY_HINTS = ['passkey', 'webauthn', 'fido', 'securitykey', 'security-key'];
 
 let cachedKdbxweb = null;
+let currentTheme = 'dark';
 
 function getKdbxweb() {
   if (cachedKdbxweb) {
@@ -149,6 +152,7 @@ passwordVisibilityButton.addEventListener('click', () => {
 });
 
 setupDropzone();
+initThemeToggle();
 
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
@@ -186,6 +190,38 @@ function setStatus(message, kind) {
     statusEl.classList.add('error');
   } else if (kind === 'ok') {
     statusEl.classList.add('ok');
+  }
+}
+
+function initThemeToggle() {
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (error) {
+    console.warn('Unable to read saved theme preference.', error);
+  }
+  const initial = savedTheme || 'dark';
+  setTheme(initial);
+  if (themeToggleButton) {
+    themeToggleButton.addEventListener('click', () => {
+      setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+  }
+}
+
+function setTheme(theme) {
+  currentTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+  } catch (error) {
+    console.warn('Unable to persist theme preference.', error);
+  }
+  if (themeToggleButton) {
+    const ariaLabel =
+      currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    themeToggleButton.setAttribute('aria-pressed', String(currentTheme === 'dark'));
+    themeToggleButton.setAttribute('aria-label', ariaLabel);
   }
 }
 

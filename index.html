@@ -1,12 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>KeePassXC Inspector</title>
+    <title>KeePass Inspector</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="topbar">
+      <span class="brand">KeePassXC Inspector</span>
+      <div class="topbar-actions">
+        <button
+          id="theme-toggle"
+          type="button"
+          class="theme-toggle"
+          aria-pressed="true"
+          aria-label="Switch color theme"
+        >
+          Light &lt;&gt; Dark
+        </button>
+      </div>
+    </div>
     <main class="page">
       <header class="hero">
         <div class="hero-heading">
