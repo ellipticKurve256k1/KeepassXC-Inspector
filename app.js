@@ -407,7 +407,7 @@ async function processEntries(entries) {
   }
   const leafRecords = [];
   for (const entry of entries) {
-    const normalized = normalizeEntry(entry);
+    const normalized = await normalizeEntry(entry);
     const canonical = canonicalizeNormalized(normalized);
     const canonicalJson = JSON.stringify(canonical.sortedObject);
     const hashInput = canonical.orderedValues.join('|');
@@ -510,7 +510,7 @@ function setupDropzone() {
   });
 }
 
-function normalizeEntry(entry) {
+async function normalizeEntry(entry) {
   const normalized = {
     uuid: normalizeText(entry.uuid ? entry.uuid.toString() : ''),
     title: normalizeValue(entry.fields.get('Title')),
@@ -566,6 +566,12 @@ function normalizeEntry(entry) {
     });
   }
 
+  const attachments = await extractAttachmentHashes(entry);
+  attachments.forEach((attachment, index) => {
+    const key = attachment.name || `attachment-${index + 1}`;
+    normalized[`attachment:${key}`] = attachment.hash;
+  });
+  normalized.attachments = attachments.map((attachment) => `${attachment.name}:${attachment.hash}`).join('|');
   normalized.totp = normalizeText(totpParts.join('|'));
   normalized.passkey = normalizeText(passkeyParts.join('|'));
   return normalized;
@@ -581,6 +587,62 @@ function canonicalizeNormalized(record) {
     orderedValues.push(value);
   }
   return { sortedObject, orderedValues };
+}
+
+async function extractAttachmentHashes(entry) {
+  if (!entry.binaries || entry.binaries.size === 0) {
+    return [];
+  }
+  const attachments = [];
+  let fallbackIndex = 1;
+  for (const [name, data] of entry.binaries) {
+    const canonicalName = canonicalizeFieldName(name) || `attachment-${fallbackIndex++}`;
+    const hash = await resolveBinaryHash(data);
+    attachments.push({ name: canonicalName, hash });
+  }
+  attachments.sort((a, b) => a.name.localeCompare(b.name));
+  return attachments;
+}
+
+async function resolveBinaryHash(binaryData) {
+  if (!binaryData) {
+    return '';
+  }
+  if (typeof binaryData === 'object' && 'hash' in binaryData && binaryData.hash) {
+    return String(binaryData.hash).toLowerCase();
+  }
+  const bytes = binaryToBytes(binaryData);
+  if (!bytes.length) {
+    return '';
+  }
+  return await sha256Hex(bytes);
+}
+
+function binaryToBytes(binaryData) {
+  if (!binaryData) {
+    return new Uint8Array();
+  }
+  if (binaryData instanceof Uint8Array) {
+    return binaryData.slice();
+  }
+  if (binaryData instanceof ArrayBuffer) {
+    return new Uint8Array(binaryData);
+  }
+  if (ArrayBuffer.isView(binaryData)) {
+    return new Uint8Array(binaryData.buffer, binaryData.byteOffset, binaryData.byteLength);
+  }
+  const { ProtectedValue } = getKdbxweb();
+  if (ProtectedValue && binaryData instanceof ProtectedValue) {
+    const raw = binaryData.getBinary();
+    return raw instanceof Uint8Array ? raw.slice() : new Uint8Array(raw);
+  }
+  if (typeof binaryData === 'object' && 'value' in binaryData) {
+    return binaryToBytes(binaryData.value);
+  }
+  if (typeof binaryData === 'object' && 'ref' in binaryData && binaryData.ref) {
+    return textEncoder.encode(String(binaryData.ref));
+  }
+  return new Uint8Array();
 }
 
 function normalizeValue(value) {
